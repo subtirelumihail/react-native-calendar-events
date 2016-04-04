@@ -162,7 +162,7 @@ RCT_EXPORT_MODULE()
     
     EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
     NSError *error = nil;
-    BOOL success = [self.eventStore removeEvent:calendarEvent span:EKSpanThisEvent commit:YES error:&error];
+    BOOL success = [self.eventStore removeEvent:calendarEvent span:EKSpanFutureEvents commit:YES error:&error];
     
     if (!success) {
         [self.bridge.eventDispatcher sendAppEventWithName:@"eventSaveError"
