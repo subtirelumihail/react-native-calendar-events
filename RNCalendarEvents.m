@@ -474,7 +474,16 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
     
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        weakSelf.calendarEvents = [weakSelf.eventStore eventsMatchingPredicate:predicate];
+        //weakSelf.calendarEvents = [weakSelf.eventStore eventsMatchingPredicate:predicate];
+        
+        NSMutableDictionary<String, EKEvent*>* eventSet = [[NSMutableDictionary alloc] init];
+        [weakSelf.eventStore enumerateEventsMatchingPredicate:predicate usingBlock:^(EKEvent * _Nonnull event, BOOL * _Nonnull stop) {
+            if(eventSet[event.calendarItemIdentifier] == nil ||
+               [((EKEvent*)eventSet[event.calendarItemIdentifier]) compareStartDateWithEvent:event] == NSOrderedDescending)
+                eventSet[event.calendarItemIdentifier] = event;
+        }];
+        weakSelf.calendarEvents = eventSet.allValues;
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             callback(@[[weakSelf serializeCalendarEvents:weakSelf.calendarEvents]]);
         });
