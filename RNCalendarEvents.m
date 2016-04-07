@@ -17,6 +17,7 @@ static NSString *const _allDay = @"allDay";
 static NSString *const _notes = @"notes";
 static NSString *const _alarms = @"alarms";
 static NSString *const _recurrence = @"recurrence";
+static NSString *const _recurrenceEndDate = @"recurrenceEndDate";
 static NSString *const _occurrenceDate = @"occurrenceDate";
 static NSString *const _isDetached = @"isDetached";
 
@@ -79,6 +80,7 @@ RCT_EXPORT_MODULE()
                    notes:(NSString *)notes
                   alarms:(NSArray *)alarms
               recurrence:(NSString *)recurrence
+       recurrenceEndDate:(NSDate *)recurrenceEndDate
 {
     if (!self.isAccessToEventStoreGranted) {
         return;
@@ -97,7 +99,7 @@ RCT_EXPORT_MODULE()
     }
     
     if (recurrence) {
-        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence];
+        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence endDate:recurrenceEndDate];
         if (rule) {
             calendarEvent.recurrenceRules = [NSArray arrayWithObject:rule];
         }
@@ -114,6 +116,7 @@ RCT_EXPORT_MODULE()
             notes:(NSString *)notes
            alarms:(NSArray *)alarms
        recurrence:(NSString *)recurrence
+recurrenceEndDate:(NSDate *)recurrenceEndDate
 {
     if (!self.isAccessToEventStoreGranted) {
         return;
@@ -130,7 +133,7 @@ RCT_EXPORT_MODULE()
     }
     
     if (recurrence) {
-        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence];
+        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence endDate:recurrenceEndDate];
         if (rule) {
             calendarEvent.recurrenceRules = [NSArray arrayWithObject:rule];
         }
@@ -263,7 +266,7 @@ RCT_EXPORT_MODULE()
     return recurrence;
 }
 
--(EKRecurrenceRule *)createRecurrenceRule:(NSString *)frequency
+-(EKRecurrenceRule *)createRecurrenceRule:(NSString *)frequency endDate:(NSDate *)recurrenceEndDate
 {
     EKRecurrenceRule *rule = nil;
     NSArray *validFrequencyTypes = @[@"daily", @"weekly", @"monthly", @"yearly"];
@@ -271,7 +274,7 @@ RCT_EXPORT_MODULE()
     if ([validFrequencyTypes containsObject:frequency]) {
         rule = [[EKRecurrenceRule alloc] initRecurrenceWithFrequency:[self frequencyMatchingName:frequency]
                                                             interval:1
-                                                                 end:nil];
+                                                                 end:[EKRecurrenceEnd recurrenceEndWithEndDate:recurrenceEndDate]];
     }
     return rule;
 }
@@ -486,6 +489,7 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title details:(NSDictionary *)details)
     NSString *notes = [RCTConvert NSString:details[_notes]];
     NSArray *alarms = [RCTConvert NSArray:details[_alarms]];
     NSString *recurrence = [RCTConvert NSString:details[_recurrence]];
+    NSDate *recurrenceEndDate = [RCTConvert NSDate:details[_recurrenceEndDate]];
     
     if (eventId) {
         EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
@@ -505,7 +509,8 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title details:(NSDictionary *)details)
                       location:location
                          notes:notes
                         alarms:alarms
-                    recurrence:recurrence];
+                    recurrence:recurrence
+             recurrenceEndDate:recurrenceEndDate];
     }
 }
 
