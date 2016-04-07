@@ -274,7 +274,7 @@ recurrenceEndDate:(NSDate *)recurrenceEndDate
     if ([validFrequencyTypes containsObject:frequency]) {
         rule = [[EKRecurrenceRule alloc] initRecurrenceWithFrequency:[self frequencyMatchingName:frequency]
                                                             interval:1
-                                                                 end:[EKRecurrenceEnd recurrenceEndWithEndDate:recurrenceEndDate]];
+                                                                 end:(recurrenceEndDate ? [EKRecurrenceEnd recurrenceEndWithEndDate:recurrenceEndDate] : nil)];
     }
     return rule;
 }
@@ -308,7 +308,8 @@ recurrenceEndDate:(NSDate *)recurrenceEndDate
                                          _allDay: @NO,
                                          _notes: @"",
                                          _alarms: @[],
-                                         _recurrence: @""
+                                         _recurrence: @"",
+                                         _recurrenceEndDate: @""
                                          };
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -473,7 +474,7 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
     
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        weakSelf.calendarEvents = [[weakSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
+        weakSelf.calendarEvents = [weakSelf.eventStore eventsMatchingPredicate:predicate];
         dispatch_async(dispatch_get_main_queue(), ^{
             callback(@[[weakSelf serializeCalendarEvents:weakSelf.calendarEvents]]);
         });
@@ -500,7 +501,8 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title details:(NSDictionary *)details)
                location:location
                   notes:notes
                  alarms:alarms
-             recurrence:recurrence];
+             recurrence:recurrence
+      recurrenceEndDate:recurrenceEndDate];
         
     } else {
         [self addCalendarEvent:title
